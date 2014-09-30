@@ -9,8 +9,41 @@
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
     <title>Game</title>
+    <style>
+    body{
+      position: relative;
+      padding: 1px;
+      margin:0;
+      padding: 0;
+      height: 900px;
+    }
+    #screen {
+      width: 600px;
+      height: 300px;
+      background: #000;
+      position: absolute;
+      left: 0px;
+      /*cursor: none;*/
+    }
+    #bowl {
+      position: absolute;
+      width: 80px;
+      height: 30px;
+      background: #fff;
+      border:1px solid #000;
+      bottom: 0px;
+      left: 0px;
+      /*cursor: none;*/
+    }
+    #part{
+      position: relative;
+      top: 200px;
+      left: 300px;
+    }
+    
+  </style>
   </head>
-
+  
   <body>
 
     <!-- HEADER -->
@@ -32,12 +65,15 @@
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
         <p>这里要做一个小小小小小小游戏</p>
-
-<p>这是一个接住落下物的小游戏模型</p>
-
-<p>今天游戏已经基本成型，加入了弹出分数功能 09－30</p>
+        <p>这是一个接住落下物的小游戏模型</p>
+        <p>今天游戏已经基本成型，加入了弹出分数功能 09－30</p>
       </section>
     </div>
+    <div id="part">
+      <div id="screen">
+        <div id="bowl">这是一个碗</div>
+      </div>
+    </div>  
 
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
@@ -46,8 +82,7 @@
         <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
-
-    
-
   </body>
+  <script src ="js/jquery.min.js"></script>
+  <script src ="js/index.js"></script>
 </html>
