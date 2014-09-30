@@ -117,28 +117,22 @@ $(function() {
 					}
 					if (fruits[i].attr('status') == 'loss' || fruits[i].attr('status') == 'got') {
 						//fruits[i].css('background', 'red')
-						console.log(fruits[i].attr('status'))
+						//console.log(fruits[i].attr('status'))
 						//fruits.remove(i);
 					};
 				})(i)
 			}
 		};
-	}, 50);
+	}, 100);
 
 	var addFruits = setInterval(function() {
 		fruits.push(fruitsFactory('apple'));
 		fruits.push(fruitsFactory('banana'));
 
-	}, 1500)
+	}, 2000)
 
 
-	var listen = setInterval(function() {
-			console.log(fruits.length)
-
-
-		},
-		1000)
-
+	
 
 	function fruitsFactory(name) {
 		var fruit;

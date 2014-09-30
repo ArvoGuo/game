@@ -21,8 +21,10 @@
       width: 600px;
       height: 300px;
       background: #000;
-      position: absolute;
-      left: 0px;
+      position: relative;
+      margin: 0 auto;
+      margin-bottom: 20px;
+      overflow: hidden;
       /*cursor: none;*/
     }
     #bowl {
@@ -37,8 +39,7 @@
     }
     #part{
       position: relative;
-      top: 200px;
-      left: 300px;
+      
     }
     
   </style>
@@ -68,12 +69,15 @@
         <p>这是一个接住落下物的小游戏模型</p>
         <p>今天游戏已经基本成型，加入了弹出分数功能 09－30</p>
       </section>
+      <section>
+        <div id="part">
+          <div id="screen">
+            <div id="bowl">这是一个碗</div>
+          </div>
+        </div> 
+      </section>   
     </div>
-    <div id="part">
-      <div id="screen">
-        <div id="bowl">这是一个碗</div>
-      </div>
-    </div>  
+    
 
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
