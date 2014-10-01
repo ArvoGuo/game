@@ -1,7 +1,7 @@
 (function($) {
 	$.prototype.intersection = function(obj) {
 		var self = $(this);
-		if (obj.position().top + obj.height() >= self.position().top) {
+		if (obj.position().top + obj.height() >= self.position().top && obj.position().top  <= self.position().top + (self.height()*3/5)) {
 			if ((obj.position().left + obj.width()) >= self.position().left && obj.position().left <= self.position().left + self.width()) {
 				return true;
 			}
@@ -22,13 +22,16 @@
 			return 'undefined';
 		}
 	}
-	$.prototype.disappear = function() {
+	$.prototype.disappear = function(scoreDiv) {
 		var self = $(this);
-		var score = $('<div>+' + self.data('score') + '</div>').css({
+		var scoreVal = parseInt(self.data('score'));
+		var scoreNow = parseInt(scoreDiv.text());
+		scoreDiv.text(scoreNow+scoreVal);
+		var score = $('<div>' + self.data('score') + '</div>').css({
 			'position':'absolute',
 			'top':'-20px',
 			'left':'-20px',
-			'color':'yellow'
+			'color': scoreVal > 0 ? 'yellow' : 'red' 
 		});
 		self.append(score);
 		score.animate({
@@ -37,7 +40,7 @@
 		}, 'slow', function() {
 			//$(this).remove();
 		});
-		self.css('background','green').stop().animate({
+		self.css('background','#D1E7AA').stop().animate({
 			top: self.position().top - 20,
 			'opacity': '0.3'
 		}, 'slow', function() {
@@ -90,6 +93,11 @@ $(function() {
 			'top': y - limit.minY
 		});
 	})
+	var scoreDiv = $('<div>0</div>').css({
+		'position':'absolute',
+		'top':0,
+		'right':'20px','color':'#81C0B1','font-size':'25px'
+	}).appendTo(screen);
 
 	//fruits
 	var fruits = [],
@@ -111,7 +119,7 @@ $(function() {
 					}
 					if (fruits[i].attr('status') == 'falling') {
 						if (bowl.intersection(fruits[i])) {
-							fruits[i].disappear();
+							fruits[i].disappear(scoreDiv);
 							fruits[i].attr('status', 'got');
 						}
 					}
@@ -128,6 +136,7 @@ $(function() {
 	var addFruits = setInterval(function() {
 		fruits.push(fruitsFactory('apple'));
 		fruits.push(fruitsFactory('banana'));
+		fruits.push(fruitsFactory('orange'));
 
 	}, 2000)
 
@@ -142,23 +151,35 @@ $(function() {
 					'position': 'absolute',
 					'top': 0,
 					'left': 0,
-					'background': '#fff',
+					'background': '#FFA366',
 					'width': '20px',
 					'height': '20px',
 					'border': 'solid 1px #000'
-				}).speed(6000).data('score', '20');
+				}).speed(6000).data('score', '+20');
 				break;
 			case 'banana':
+				fruit = $('<div>炸弹</div>').css({
+					'position': 'absolute',
+					'top': 0,
+					'left': 0,
+					'background': '#923B9E',
+					'width': '40px',
+					'height': '20px',
+					'border': 'solid 1px #000'
+				}).speed(3000).data('score', '-15');
+				break;
+			case 'orange':
 				fruit = $('<div></div>').css({
 					'position': 'absolute',
 					'top': 0,
 					'left': 0,
-					'background': '#fff',
-					'width': '40px',
-					'height': '20px',
+					'background': '#EED550',
+					'width': '30px',
+					'height': '30px',
+					'border-radius':'15px',
 					'border': 'solid 1px #000'
-				}).speed(3000).data('score', '40');
-				break;
+				}).speed(2500).data('score', '+10');
+				break;	
 		}
 		fruit.attr('status', 'ready').css('left', getRandomInt(0, screen.width() - fruit.width()))
 		return fruit.appendTo(screen);
