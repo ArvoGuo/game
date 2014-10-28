@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<style>
+	body{
+		
+	}
+	.square{
+		width: 200px;
+		height: 200px;
+		margin: 100px auto;
+		-webkit-perspective: 800;
+		-webkit-perspective-origin:50% 50%;
+		-webkit-transform-style: preserve-3d;
+		position: relative;
+	}
+	.square div{
+		width: 200px;
+		height: 200px;
+		background-color: #69c;
+		position: absolute;
+		border: 1px solid #000;
+	}
+	.square .square-2{
+		transform-origin:bottom;
+		transform:rotateX(90deg);
+		background-color: yellow;
+	}
+	 .square .square-3{
+		transform-origin:top;
+		transform:rotateX(-90deg);
+		background-color: red;
+	}
+	.square .square-4{
+		transform-origin:left;
+		transform:rotateY(90deg);
+		background-color: gray;
+	}
+	.square .square-5{
+		transform-origin:right;
+		transform:rotateY(-90deg);
+		background-color: orange;
+	}
+	.square .square-6{
+		transform:translateZ(-200px);
+		background-color: green
+	}
+	.rop{
+		margin: 0 auto;
+		text-align: center;
+	}
+	.rop input{
+		width: 700px;
+	}
+</style>
+<body>
+	<div class="square" id="square">
+		<div class="square-1" id="square-1"></div>
+		<div class="square-2"></div>
+		<div class="square-3"></div>
+		<div class="square-4"></div>
+		<div class="square-5"></div>
+		<div class="square-6"></div>
+	</div>
+	<div class="rop">
+		x:<span id="x-value"></span></br><input type="range" min="-360" max="360" class="rotate" id="x"  value="0"></br>
+		y:<span id="y-value"></span></br><input type="range" min="-360" max="360" class="rotate"  id="y"  value="0"></br>
+		z:<span id="z-value"></span></br><input type="range" min="-360" max="360" class="rotate" id="z"  value="0">
+		</div>
+		
+</body>
+<script>
+	var i=setInterval(rotate, 100)
+	function rotate(){
+		var x = $('x').value;
+		var y = $('y').value;
+		var z = $('z').value;
+		$('square').style.webkitTransform = "rotateX("+ x +"deg) rotateY("+ y +"deg) rotateZ("+ z+"deg)";
+		$('x-value').innerText = x; 
+		$('y-value').innerText = y;
+		$('z-value').innerText = z;
+	}
+	function $(id){
+		return document.getElementById(id);
+	}
+</script>
+</html>

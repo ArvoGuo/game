@@ -9,5 +9,12 @@
 ##
 试玩地址
 ----------
-http://arvoguo.github.io/game
+http://arvoguo.github.io/game/index.html
+
+##
+今天学习了下css3，感谢liuyubobobo，虽然知道他是谁，但是算启蒙老师吧。
+##
+写了一个正方体小Demo
+
+http://arvoguo.github.io/game/3d.html
 
