@@ -1,0 +1,295 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta name="Keywords" content=""/>
+    <meta name="Description" content=""/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="format-detection" content="email=no" />
+    <meta name="apple-mobile-web-app-title" content="大众点评">
+    <style>
+      body{
+      }
+      .screen{
+        position: relative;
+        
+      }
+      .screen-draw{
+        display: none;
+      }
+      .screen-rule{
+        display: none;
+      }
+      .screen-index{
+        display: none;
+      }
+      .screen-game{
+      }
+      .index-title{
+        width: 100%;
+      }
+      .index-grid{
+        background: #000;
+        margin: 10px auto;
+      }
+      .rule{
+        background-color: #fee4b3;
+        border:2px solid #bb3437;
+        border-radius: 10px;
+        padding:15px 15px;
+      }
+      .common{
+        background-color: #fee4b3;
+        border:2px solid #bb3437;
+        border-radius: 10px;
+        padding:15px 15px;
+      }
+      .rule-part{
+
+        background-color: #fefbea;
+        border:2px solid #ffb320;
+        border-radius: 10px;
+        padding:15px 8px;
+      }
+      .rule-part .rule-score{
+        display: block;
+        width: 90%;
+        margin: 0 auto;
+      }
+      .total-score{
+        position: absolute;
+        right: 0px;
+        top: 0;
+        z-index: 3;
+        font-size:35px;
+        color: orange;
+      }
+      .limit-time{
+        position: absolute;
+        left: 0px;
+        top: 0;
+        z-index: 3;
+        font-size:35px;
+        color: orange;
+      }
+      .game{
+        border-radius: 10px;
+        background: -webkit-gradient(linear, left top, left bottom, from(rgb(206, 132, 85)), color-stop(0.5,rgb(245, 223, 135)), to(rgb(206, 132, 85)));
+        width: 100%;
+        height: 500px;
+        position: relative;
+        overflow: hidden;
+        -webkit-perspective: 800;
+        -webkit-perspective-origin:50% 50%;
+        -webkit-transform-style: preserve-3d;
+
+      }
+      .vg{
+        width: 80px;
+        height: 50px;
+
+        position: absolute;
+        top: -50px;
+      }
+      .vg img{
+        transition:transform 1s ease-out ;
+      }
+    </style>
+     
+</head>
+
+<body >
+  <!--游戏页面-->
+  <div class="screen screen-game">
+    <div class="total-score">0</div>
+    <div class="limit-time"></div>
+    <div class="game">
+    </div>
+  </div>
+  <!--得分去抽奖-->
+</body>
+    <script src="js/jquery.min.js"></script>
+    <script>
+      $(document).ready(function(){
+        //  gridInit();
+          new game();
+      })
+      var opt = {},
+          vgOptions = {},
+          any = [],
+          totalScore = 0,
+          limitTime = 60,
+          settime,
+          setFactory,
+          setMove,
+          imgPath = "img/vg/";
+      opt.width = $('.game').width();
+      opt.height = $('.game').height();
+      vgOptions.width = 80;
+
+      var vgs = [
+            { 
+              name:"fishball",
+              speed:"7",
+              score:"3",
+              img:imgPath + "fishball.png"
+            },
+            { 
+              name:"cabbage",
+              speed:"9",
+              score:"1",
+              img:imgPath + "cabbage.png"
+            },
+            { 
+              name:"beef",
+              speed:"2",
+              score:"5",
+              img:imgPath + "beef.png"
+            },
+            { 
+              name:"mushroom",
+              speed:"2",
+              score:"3",
+              img:imgPath + "mushroom.png"
+            },
+            { 
+              name:"tofu",
+              speed:"2",
+              score:"1",
+              img:imgPath + "tofu.png"
+            },
+            { 
+              name:"bone",
+              speed:"2",
+              score:"5",
+              img:imgPath + "bone.png"
+            }
+
+      ],
+      totalNum = vgs.length;
+      function game(){
+        init();
+        start();
+        var time = limitTime;
+        settime = setInterval(function(){
+          if(time <= 0){
+            stop();
+          }
+          $('.limit-time').text(time --)
+        },1000)
+
+      }
+      function init(){
+        $('.game').html();
+        totalScore = 0;
+        $('.total-score').text(totalScore);
+      }
+      function factory(){
+        var elm ;
+        var rand = getRandomInt(0,totalNum);
+        var vg = vgs[rand]
+            elm = $('<div class="vg" name="'+ vg.name +'" speed="'+ vg.speed +'" score="'+ vg.score +'"><img src="'+ vg.img +'"><div>').css(
+              {
+                'transition':'top ' + vg.speed +'s linear,transform 1s ease-out ',
+                'left':getRandomInt(0,opt.width - vgOptions.width),
+                'top':-vgOptions.width
+              });
+            elm.on('transitionend',function(){$(this).remove()})
+            elm.on('click',function(){
+              var self = this;
+              if ($(self).attr('status')) { return};
+              $(self).attr('status','1');
+              totalScore += parseInt(vg.score);
+              $('.total-score').text(totalScore);
+              $(self).find('img').css({'transform':'rotateY(580deg) scale(0.3,0.3)'})
+              var score = $('<div class="score"> +'+ vg.score +'</div>').css({
+                'position': 'absolute',
+                'top': '-5px',
+                'left': '-5px',
+                'color': 'yellow'
+              }).appendTo($(self));
+              score.animate({
+                'font-size': '25px',
+                top: $(this).top - 50
+              }, 'slow', function() {
+                  $(self).remove();
+              });
+
+            })
+
+            elm.appendTo($('.game'));
+            any.push(elm);
+            return elm;
+      }
+      // function run(elm){
+      //   setTimeout(function(){
+      //    elm.css({'top':opt.height});
+      //   },1)
+      // }
+      function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min)) + min;
+      }
+      function stop(){
+        clearInterval(setFactory);
+        clearInterval(setMove);
+        clearInterval(settime)
+        $('.vg').remove()
+        $('.game').html();
+      }
+      function start(){
+        setFactory = setInterval(function(){
+          factory();
+        },500)
+        setMove = setInterval(function(){
+          any.pop().css({'top':opt.height});
+        },1000)
+        
+      }
+      function gridInit(){
+        var gridOpts = {
+          gridSize : 90,
+          gap : 4,
+          path : 'img/grid/'
+        };
+
+        var element = $('.index-grid').css({
+            'position': 'relative',
+            'overflow': 'hidden',
+            'background': '#000',
+            'border': '6px solid #000',
+            'width': gridOpts.gridSize * 3 + gridOpts.gap * 2 + 'px',
+            'height': gridOpts.gridSize * 3 + gridOpts.gap * 2 + 'px'
+        });
+        var x, y;
+            for (x = 0; x < 3; x++) {
+                for (y = 0; y < 3; y++) {
+                    var cell = document.createElement("div");
+                    cell.className = 'cell';
+                    cell.setAttribute('id', 'cell-' + x + '-' + y);
+                    var img = document.createElement('img');
+                    img.setAttribute('width', gridOpts.gridSize)
+                    img.setAttribute('height', gridOpts.gridSize)
+                    img.setAttribute('src', gridOpts.path + x + y + '.png');
+                    cell.appendChild(img);
+                    element.append(cell);
+                }
+            }
+            for (x = 0; x < 3; x++) {
+                for (y = 0; y < 3; y++) {
+                    var item = $('#cell-' + x + '-' + y)[0];
+                    item.style.top = x * (gridOpts.gridSize + gridOpts.gap) + 'px';
+                    item.style.left = y * (gridOpts.gridSize + gridOpts.gap) + 'px';
+                    item.style.width = gridOpts.gridSize + 'px';
+                    item.style.height = gridOpts.gridSize + 'px';
+                    item.style.position = 'absolute';
+                }
+            }
+
+      }
+    </script>
+</html>
+

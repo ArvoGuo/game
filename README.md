@@ -11,10 +11,27 @@
 ----------
 http://arvoguo.github.io/game/index.html
 
+----------
 ##
 今天学习了下css3，感谢liuyubobobo，虽然知道他是谁，但是算启蒙老师吧。
 ##
 写了一个正方体小Demo
-
+##
+试玩地址
+----------
 http://arvoguo.github.io/game/3d.html
+----------
+##
+今天用css3写了一个小游戏
+##
+试玩地址
+----------
+http://arvoguo.github.io/game/vg.html
+![二维码](img/wx-vg.png)
+----------
+
+
+
+
+
 
