@@ -211,7 +211,8 @@
                 'top':-vgOptions.width
               });
             elm.on('transitionend',function(){$(this).remove()})
-            elm.on('touchstart click',function(){
+            elm.on('touchstart click',function(e){
+              e.stopPropagation();
               var self = this;
               if ($(self).attr('status')) { return};
               $(self).attr('status','1');
