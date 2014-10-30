@@ -86,6 +86,9 @@
         -webkit-perspective: 800;
         -webkit-perspective-origin:50% 50%;
         -webkit-transform-style: preserve-3d;
+        perspective: 800;
+        perspective-origin:50% 50%;
+        transform-style: preserve-3d;
 
       }
       .vg{
@@ -96,6 +99,10 @@
         top: -50px;
       }
       .vg img{
+        -ms-transform:-ms-transform 1s ease-out;   /* IE 9 */
+        -moz-transform:-moz-transform 1s ease-out;  /* Firefox */
+        -webkit-transform:-webkit-transform 1s ease-out; /* Safari 和 Chrome */
+        -o-transform:-o-transform 1s ease-out; 
         transition:transform 1s ease-out ;
       }
     </style>
@@ -194,6 +201,10 @@
         var vg = vgs[rand]
             elm = $('<div class="vg" name="'+ vg.name +'" speed="'+ vg.speed +'" score="'+ vg.score +'"><img src="'+ vg.img +'"><div>').css(
               {
+                '-ms-transition':'top ' + vg.speed +'s linear,transform 1s ease-out ',
+                '-webkit-transition':'top ' + vg.speed +'s linear,transform 1s ease-out ',
+                '-moz-transition':'top ' + vg.speed +'s linear,transform 1s ease-out ',
+                '-0-transition':'top ' + vg.speed +'s linear,transform 1s ease-out ',
                 'transition':'top ' + vg.speed +'s linear,transform 1s ease-out ',
                 'left':getRandomInt(0,opt.width - vgOptions.width),
                 'top':-vgOptions.width
