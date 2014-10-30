@@ -86,6 +86,10 @@
         -webkit-perspective: 800;
         -webkit-perspective-origin:50% 50%;
         -webkit-transform-style: preserve-3d;
+
+        -moz-perspective: 800;
+        -moz-perspective-origin:50% 50%;
+        -moz-transform-style: preserve-3d;
         perspective: 800;
         perspective-origin:50% 50%;
         transform-style: preserve-3d;
@@ -99,11 +103,10 @@
         top: -50px;
       }
       .vg img{
-        -ms-transform:-ms-transform 1s ease-out;   /* IE 9 */
-        -moz-transform:-moz-transform 1s ease-out;  /* Firefox */
-        -webkit-transform:-webkit-transform 1s ease-out; /* Safari 和 Chrome */
-        -o-transform:-o-transform 1s ease-out; 
-        transition:transform 1s ease-out ;
+         -webkit-transition: all 1s ease-in-out;
+          -moz-transition: all 1s ease-in-out;
+          -o-transition: all 1s ease-in-out;
+          transition: all 1s ease-in-out;
       }
     </style>
      
@@ -201,10 +204,8 @@
         var vg = vgs[rand]
             elm = $('<div class="vg" name="'+ vg.name +'" speed="'+ vg.speed +'" score="'+ vg.score +'"><img src="'+ vg.img +'"><div>').css(
               {
-                '-ms-transition':'top ' + vg.speed +'s linear,transform 1s ease-out ',
-                '-webkit-transition':'top ' + vg.speed +'s linear,transform 1s ease-out ',
-                '-moz-transition':'top ' + vg.speed +'s linear,transform 1s ease-out ',
-                '-0-transition':'top ' + vg.speed +'s linear,transform 1s ease-out ',
+                '-webkit-transition':'top ' + vg.speed +'s linear,-webkit-transform 1s ease-out ',
+                '-moz-transition':'top ' + vg.speed +'s linear,-moz-transform 1s ease-out ',
                 'transition':'top ' + vg.speed +'s linear,transform 1s ease-out ',
                 'left':getRandomInt(0,opt.width - vgOptions.width),
                 'top':-vgOptions.width
@@ -216,7 +217,14 @@
               $(self).attr('status','1');
               totalScore += parseInt(vg.score);
               $('.total-score').text(totalScore);
-              $(self).find('img').css({'transform':'rotateY(580deg) scale(0.3,0.3)'})
+              $(self).find('img').css(
+                {
+                  
+                  '-webkit-transform':'rotateY(580deg) scale(0.3,0.3)',
+                  '-moz-transform':'rotateY(580deg) scale(0.3,0.3)',
+                  'transform':'rotateY(580deg) scale(0.3,0.3)'
+
+                })
               var score = $('<div class="score"> +'+ vg.score +'</div>').css({
                 'position': 'absolute',
                 'top': '-5px',
