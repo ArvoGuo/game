@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>弹弹弹</title>
+</head>
+<style>
+  html {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    height: 100%;
+  }
+</style>
+<body onLoad="init()">
+  <canvas id="canvas"  style="display:block;background-color: #ccc;margin:0 auto;"></canvas>
+</body>
+<script>
+  var ctx;
+  var canvas;
+  var scaleN       = 40;
+  var rad          = 10;
+  var sx           = 10;
+  var sy           = 10;
+  var balls        = [];
+  var WIDTH        = document.body.clientWidth;
+  var HEIGHT       = document.body.clientHeight;
+  var fps          = 10;
+  var G            = 10 * scaleN; // m -> px
+  var frictionX    = 0.9;
+  var frictionY    = 0.9;
+  var boundBottom  = HEIGHT - rad;
+  var boundLeft    = rad;
+  var boundRight   = WIDTH  - rad;
+  var boundTop     = rad;
+  var catapult;
+  function init() {
+    canvas = document.getElementById('canvas');
+    canvas.width  = WIDTH;
+    canvas.height = HEIGHT;
+    ctx           = canvas.getContext('2d');
+    catapult     = new Catapult();
+    var touchStart,touchMove,touchEnd;
+    touchStart = isMobile() ? 'touchstart' : 'mousedown';
+    touchMove = isMobile() ? 'touchmove' : 'mousemove';
+    touchEnd = isMobile() ? 'touchend' : 'mouseup';
+    canvas.addEventListener(touchStart, mouseDown, false);
+    canvas.addEventListener(touchMove, mouseMove, false);
+    canvas.addEventListener(touchEnd, mouseUp, false);
+    setInterval(drawAll,fps);
+  }
+
+  function mouseDown(e) {
+    stopDefault();
+    var event = isMobile() ? e.touches[0] : e;
+    var x = event.offsetX || event.pageX - (event.target.getBoundingClientRect().left + document.body.scrollTop);
+    var y = event.offsetY || event.pageY - (event.target.getBoundingClientRect().top + document.body.scrollTop);
+    catapult.setStart(x, y);
+    // var a = new Ball(x, y , 0, 0);
+    // balls.push(a);
+  }
+
+  function mouseMove(e) {
+    stopDefault();
+    var event = isMobile() ? e.touches[0] : e;
+    var x = event.offsetX || event.pageX - (event.target.getBoundingClientRect().left + document.body.scrollTop);
+    var y = event.offsetY || event.pageY - (event.target.getBoundingClientRect().top + document.body.scrollTop);
+    catapult.setEnd(x, y);
+  }
+
+  function mouseUp() {
+    stopDefault();
+    catapult.stopDrag();
+    balls.push(new Ball(catapult.x1, catapult.y1, catapult.sBall.x, catapult.sBall.y));
+  }
+
+  function clearAll() {
+    ctx.clearRect(0, 0, WIDTH, HEIGHT);
+  }
+  function drawAll() {
+    clearAll();
+    for (var i = 0, len = balls.length; i < len; i ++) {
+      balls[i].draw().move();
+    }
+    catapult.draw().move();
+  }
+
+  function Catapult() {
+    this.dragStatus  = false;
+    this.x1          = 0;
+    this.x2          = 0;
+    this.y1          = 0;
+    this.y2          = 0;
+    this.sx          = 20;
+    this.sBall = {
+        x: 0,
+        y: 0
+    };
+    this.strokeStyle = newColor();
+  }
+
+  Catapult.prototype = {
+    draw: function() {
+      ctx.strokeStyle = this.strokeStyle;
+      ctx.lineWidth   = 2;
+      ctx.beginPath();
+      ctx.moveTo(this.x1, this.y1);
+      ctx.lineTo(this.x2, this.y2);
+      ctx.stroke();
+      return this;
+    },
+    move: function () {
+      if (!this.dragStatus) {
+        if (abs(this.x2 - this.x1) < this.sx) {
+          this.x1 = this.x2 = this.y1 = this.y2 = 0;
+          return;
+        }
+        var angle = abs(this.y2 - this.y1) / abs(this.x2 - this.x1);
+        var newX  = (this.x2 > this.x1 ? - this.sx : this.sx) + this.x2;
+        var tempY = angle * abs(newX - this.x1);
+        var newY  = (this.y2 > this.y1 ? tempY : - tempY) + this.y1;
+        this.x2 = newX;
+        this.y2 = newY;
+      }
+      return this;
+    },
+    setStart: function(x, y) {
+      clearAll();
+      this.dragStatus  = true;
+      this.x1 = x;
+      this.y1 = y;
+      this.x2 = x;
+      this.y2 = y;
+      this.sBall = {
+        x: 0,
+        y: 0
+      };
+    },
+    setEnd  : function(x, y) {
+      if (!this.dragStatus) {
+        return;
+      }
+      this.x2    = x;
+      this.y2    = y;
+      this.sBall = {
+        x: (this.x1 - this.x2) * 0.1,
+        y: - (this.y1 - this.y2) * 0.1
+      };
+    },
+    stopDrag: function() {
+      this.dragStatus = false;
+    }
+  };
+
+  function Ball(x, y, sx, v) {
+    this.run   = true;
+    this.x     = x;
+    this.y     = y;
+    this.sx    = sx;
+    this.initY = y;
+    this.maxY  = y;
+    this.v     = v * scaleN;
+    this.g     = G;
+    this.rad   = rad;
+    this.bornTime = (new Date()).getTime() / 1000;
+    this.EX    = 0.5 * this.sx * this.sx;
+    this.EY    = (boundBottom - this.y) * G + 0.5 * this.v * this.v;
+    this.fillStyle = newColor();
+  }
+
+  Ball.prototype = {
+    draw : function() {
+      ctx.fillStyle = this.fillStyle;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.rad, 0, Math.PI * 2, true);
+      ctx.fill();
+      // ctx.font="20px Georgia";
+      // ctx.fillText('x: '+ this.x,this.x-150,this.y);
+      return this;
+    },
+    move: function() {
+      if (!this.run) {
+        return;
+      }
+      this.checkDie();
+      var nowTime = newTime();
+      var t       = nowTime - this.bornTime;
+      var disY;
+      disY      = this.v * t - G * 0.5 * t * t;
+      this.oldY = this.y;
+      this.oldX = this.x;
+      this.y    = this.maxY - disY;
+      this.x += this.sx;
+      if (this.x >= boundRight) {
+        this.x  = boundRight;
+        this.EX = this.EX * frictionX;
+        this.sx = - this.getVbyE(this.EX);
+      }
+      if (this.x <= boundLeft) {
+        this.x  = boundLeft;
+        this.EX = this.EX * frictionX;
+        this.sx = this.getVbyE(this.EX);
+      }
+
+      if (this.y > boundBottom) {
+        this.bornTime = newTime();
+        this.maxY     = boundBottom;
+        this.sx = this.sx * 0.999;
+        this.reduceY();
+        this.v       = this.getVbyE(this.EY);
+        this.g        = - G;
+      }
+      if (this.y < boundTop) {
+        this.bornTime = newTime();
+        this.maxY     = boundTop;
+        this.sx = this.sx * 0.999;
+        this.reduceY();
+        this.v       = - this.getVbyE(this.EY);
+        this.g        = G;
+      }
+      return this;
+    },
+    borderReset: function () {
+      if (this.x >= boundRight) {
+        this.x  = boundRight;
+      }
+      if (this.x <= boundLeft) {
+        this.x  = boundLeft;
+      }
+
+      if (this.y > boundBottom) {
+        this.y     = boundBottom;
+      }
+      if (this.y < boundTop) {
+        this.y     = boundTop;
+      }
+      return this;
+    },
+    checkDie: function() {
+      if (!this.run) {
+        return;
+      }
+      this.EX    = 0.5 * this.sx * this.sx;
+      if (this.EY < 0.1 && this.EX < 0.1) {
+        this.run = false;
+      }
+      return this;
+    },
+    checkRect: function() {
+      for (var i = 0; i < balls.length; i ++){
+        var b = balls[i];
+        if (b == this) {
+          continue;
+        }
+        var a = pow(Math.abs(this.x - b.x));
+        var b = pow(Math.abs(this.y -b.y));
+        var c = pow(2 * rad);
+        if ( a + b <= c) {
+          this.x = this.oldX;
+          this.y = this.oldY;
+          if (a + b <= pow(rad)) {
+            this.x = this.sx > 0 ? this.oldX - 2 * rad : this.oldX + 2 * rad;
+            this.y = this.g  > 0 ? this.oldY - 2 * rad : this.oldY + 2* rad;
+          }
+          this.borderReset();
+          this.sx = - this.sx;
+        }
+      }
+      return this;
+    },
+    reduceY: function() {
+      this.EY = this.EY * frictionY;
+    },
+    reduceX: function() {
+      this.EX = this.EX * frictionX;
+    },
+    getVbyE: function(E) {
+      return Math.sqrt(E * 2);
+    }
+  };
+  function pow(x) {
+    return Math.pow(x,2);
+  }
+  function abs(x) {
+    return Math.abs(x);
+  }
+
+  function newTime() {
+    return (new Date()).getTime() / 1000;
+  }
+
+  function getC(a, b) {
+    return Math.sqrt(pow(a) + pow(b));
+  }
+
+  function newColor() {
+    var r, g, b;
+    r = random();
+    g = random();
+    b = random();
+    function random() {
+      return Math.floor(Math.random() * (255 - 0)) + 0;
+    }
+    return 'rgb('+ r +',' + g + ',' + b + ')';
+  }
+  function isMobile(){
+    var sUserAgent= navigator.userAgent.toLowerCase(),
+    bIsIpad= sUserAgent.match(/ipad/i) == "ipad",
+    bIsIphoneOs= sUserAgent.match(/iphone os/i) == "iphone os",
+    bIsMidp= sUserAgent.match(/midp/i) == "midp",
+    bIsUc7= sUserAgent.match(/rv:1.2.3.4/i) == "rv:1.2.3.4",
+    bIsUc= sUserAgent.match(/ucweb/i) == "ucweb",
+    bIsAndroid= sUserAgent.match(/android/i) == "android",
+    bIsCE= sUserAgent.match(/windows ce/i) == "windows ce",
+    bIsWM= sUserAgent.match(/windows mobile/i) == "windows mobile",
+    bIsWebview = sUserAgent.match(/webview/i) == "webview";
+    return (bIsIpad || bIsIphoneOs || bIsMidp || bIsUc7 || bIsUc || bIsAndroid || bIsCE || bIsWM);
+  }
+  function stopDefault(e){
+    e = e || window.event;
+    if(e.preventDefault){
+      e.preventDefault();
+    }else{
+      e.returnValue=false;
+    }
+  }
+</script>
+</html>

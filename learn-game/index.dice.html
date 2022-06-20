@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body onLoad="init()">
+  <canvas id="canvas" width="400" height="300"></canvas>
+  <button onclick="drawFace(1)">1</button>
+  <button onclick="drawFace(2)">2</button>
+  <button onclick="drawFace(3)">3</button>
+  <button onclick="drawFace(4)">4</button>
+  <button onclick="drawFace(5)">5</button>
+  <button onclick="drawFace(6)">6</button>
+</body>
+<script>
+
+var Pie        =  Math.PI;
+var Pie2       =  Math.PI*2;
+var cWidth     = 400;
+var cHeight    = 300;
+var diceX      = 50;
+var diceY      = 50;
+var diceWidth  = 100;
+var diceHeight = 100;
+var dotRad     = 6;
+var ctx;
+
+  function init() {
+    ctx = document.getElementById('canvas').getContext('2d');
+    ctx.lineWidth = 5;
+    ctx.strokeRect(diceX, diceY, diceWidth, diceHeight);
+    ctx.fillStyle = "red";
+  }
+
+  function drawFace(n) {
+    ctx.clearRect(diceX + 2.5, diceY + 2.5, diceWidth - 5, diceHeight - 5);
+    switch(n) {
+      case 1:
+        draw1();
+        break;
+      case 2:
+        draw2();
+        break;
+      case 3:
+        draw2();
+        draw1();
+        break;
+      case 4:
+        draw4();
+        break;
+      case 5:
+        draw4();
+        draw1();
+        break;
+      case 6:
+        draw4();
+        draw2mid();
+        break;
+    }
+  }
+
+  function draw1() {
+    var dotX;
+    var dotY;
+    dotX = diceX + 0.5 * diceWidth;
+    dotY = diceY + 0.5 * diceHeight;
+    drawDot(dotX, dotY);
+  }
+
+  function draw2() {
+    var dotX;
+    var dotY;
+    dotX = diceX + 3 * dotRad;
+    dotY = diceY + 3 * dotRad;
+    drawDot(dotX, dotY);
+    dotX = diceX + diceWidth  - 3 * dotRad;
+    dotY = diceY + diceHeight - 3 * dotRad;
+    drawDot(dotX, dotY);
+  }
+
+  function draw4() {
+    var dotX;
+    var dotY;
+    draw2();
+    dotX = diceX + 3 * dotRad;
+    dotY = diceY + diceHeight - 3 * dotRad;
+    drawDot(dotX, dotY);
+    dotX = diceX + diceWidth - 3 * dotRad;
+    dotY = diceY + 3 * dotRad;
+    drawDot(dotX, dotY);
+  }
+
+  function draw2mid() {
+    var dotX;
+    var dotY;
+    dotX = diceX + 3 * dotRad;
+    dotY = diceY + 0.5 * diceHeight;
+    drawDot(dotX, dotY);
+    dotX = diceX + diceWidth - 3 * dotRad;
+    dotY = diceY + 0.5 * diceHeight;
+    drawDot(dotX, dotY);
+  }
+
+  function drawDot(x, y) {
+    ctx.beginPath();
+    ctx.arc(x, y, dotRad, 0, Math.PI*2, true);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function getRandom() {
+    return 1 + Math.floor(Math.random()*6);
+  }
+</script>
+</html>

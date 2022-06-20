@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body onLoad="init();">
+  <canvas id="canvas" width="1200" height="600"></canvas>
+  <script>
+  var cWidth          = 1200;
+  var cHeight         = 600;
+  var ctx;
+  var canvas1;
+  var everything      = [];
+  var tid;
+  var startRockX      = 100;
+  var startRockY      = 240;
+  var ballX           = startRockX;
+  var ballY           = startRockY;
+  var ballRad         = 10;
+  var ballRadSq       = ballRad * ballRad;
+  var inmotion        = false;
+  var horvelocity;
+  var verticalvel1;
+  var verticalvel2;
+  var gravity         = 2;
+  var chicken         = new Image();
+  chicken.src         = 'chicken.jpg';
+  var feathers        = new Image();
+  feathers.src        = 'feathers.jpg';
+
+  function Sling (bx, by, s1x, s1y, s2x, s2y, s3x, s3y, styleString) {
+    this.bx   = bx;
+    this.by   = by;
+    this.s1x  = s1x;
+    this.s1y  = s1y;
+    this.s2x  = s2x;
+    this.s2y  = s2y;
+    this.s3x  = s3x;
+    this.s3y  = s3y;
+    this.draw = drawSling;
+    this.strokeStyle = styleString;
+    this.moveIt       = moveSling;
+  }
+
+  function drawSling() {
+    ctx.strokeStyle = this.strokeStyle;
+    ctx.lineWidth   = 4;
+    ctx.beginPath();
+    ctx.moveTo(this.bx, this.by);
+    ctx.lineTo(this.s1x, this.s1y);
+    ctx.moveTo(this.bx, this.by);
+    ctx.lineTo(this.s2x, this.s2y);
+    ctx.moveTo(this.s1x, this.s1y);
+    ctx.lineTo(this.s2x, this.s2y);
+    ctx.lineTo(this.s3x, this.s3y);
+    ctx.stroke();
+  }
+
+  function moveSling(dx, dy) {
+    this.bx   += dx;
+    this.by   += dy;
+    this.s1x  += dx;
+    this.s1y  += dy;
+    this.s2x  += dx;
+    this.s2y  += dy;
+    this.s3x  += dx;
+    this.s3y  += dy;
+  }
+
+  var mySling = new Sling(startRockX, startRockY, startRockX + 80, startRockY - 10, startRockX + 80,
+                          startRockY + 10, startRockX + 70, startRockY + 180, "rgb(120, 20, 10)");
+  function Ball(sx, sy, rad, styleString) {
+    this.sx        = sx;
+    this.sy        = sy;
+    this.rad       = rad;
+    this.draw      = drawBall;
+    this.moveIt    = moveBall;
+    this.fillStyle = styleString;
+  }
+
+  function drawBall() {
+    ctx.fillStyle = this.fillStyle;
+    ctx.beginPath();
+    ctx.arc(this.sx, this.sy, this.rad, 0, Math.PI*2, true);
+    ctx.fill();
+  }
+
+  function moveBall(dx, dy) {
+    this.sx += dx;
+    this.sy += dy;
+  }
+
+  var cBall = new Ball(startRockX, startRockY, ballRad, "rgb(250,0,0)");
+
+  function myRecTangle(sx, sy, sWidth, sHeight, styleString) {
+    this.sx        = sx;
+    this.sy        = sy;
+    this.sWidth    = sWidth;
+    this.sHeight   = sHeight;
+    this.fillStyle = styleString;
+    this.draw      = drawRects;
+    this.moveIt    = moveBall;
+  }
+
+  function drawRects() {
+    ctx.fillStyle = this.fillStyle;
+    ctx.fillRect(this.sx, this.sy, this.sWidth, this.sHeight);
+  }
+
+  function Picture(sx, sy, sWidth, sHeight, imga) {
+    this.sx       = sx;
+    this.sy       = sy;
+    this.img      = imga;
+    this.sWidth   = sWidth;
+    this.sHeight  = sHeight;
+    this.draw     = drawAnImage;
+    this.moveIt   = moveBall();
+  }
+
+  function drawAnImage() {
+    ctx.drawImage(this.img, this.sx, this.sy, this.sWidth, this.sHeight);
+  }
+
+  var target = new Picture(700, 210, 209, 179, chicken);
+  var ground = new myRecTangle(0, 370, 1200, 30, "rgb(10, 250, 0)");
+  everything.push(target);
+  everything.push(ground);
+  everything.push(mySling);
+  everything.push(cBall);
+
+  function init() {
+    ctx      =  document.getElementById('canvas').getContext('2d');
+    canvas1  =  document.getElementById('canvas');
+    canvas1.addEventListener('mousedown', findBall, false);
+    canvas1.addEventListener('mousemove', moveIt, false);
+    canvas1.addEventListener('mouseup', finish, false);
+    drawAll();
+  }
+
+  function findBall(ev) {
+    var mx;
+    var my;
+    if ( ev.layerX || ev.layerX == 0) {
+      mx = ev.layerX;
+      my = ev.layerY;
+    } else if (ev.offsetX || ev.offsetX == 0) {
+      my = ev.offsetX;
+      my = ev.offsetY;
+    }
+    if ( distSq(mx, my, cBall.sx, cBall.sy) < ballRadSq) {
+      inmotion = true;
+      drawAll();
+    }
+  }
+
+  function distSq (x1, y1, x2, y2) {
+    return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+  }
+
+  function moveIt(ev) {
+    var mx;
+    var my;
+    if (inmotion) {
+      if (ev.layerX || ev.layerX == 0) {
+        mx = ev.layerX;
+        my = ev.layerY;
+      } else if (ev.offsetX || ev.offset == 0) {
+        mx = ev.offsetX;
+        my = ev.offsetY;
+      }
+      cBall.sx   = mx;
+      cBall.sy   = my;
+      mySling.bx = mx;
+      mySling.by = my;
+      drawAll();
+    }
+  }
+
+  function finish(ev) {
+    if (inmotion) {
+      inmotion          = false;
+      var outofcannon   = distSq(mySling.bx, mySling.by, mySling.s1x, mySling.s1y)/700;
+      var angleradians  = - Math.atan2(mySling.s1y - mySling.by, mySling.s1x - mySling.bx);
+      horvelocity       = outofcannon * Math.cos(angleradians);
+      verticalvel1      = - outofcannon * Math.sin(angleradians);
+      drawAll();
+      tid = setInterval(change, 100);
+    }
+  }
+
+  function drawAll () {
+    ctx.clearRect(0,0,cWidth, cHeight);
+    var i ;
+    for (i = 0; i < everything.length; i ++) {
+      everything[i].draw();
+    }
+  }
+
+  function change() {
+    var dx       = horvelocity;
+    verticalvel2 = verticalvel1 + gravity;
+    var dy       = (verticalvel1 + verticalvel2) * 0.5;
+    verticalvel1 = verticalvel2;
+    cBall.moveIt(dx, dy);
+    var bx       = cBall.sx;
+    var by       = cBall.sy;
+    if ((bx >= target.sx + 40) && (bx <= (target.sx + target.sWidth - 40)) && (by >= target.sy + 40) && (by <= (target.sy + target.sHeight - 40))) {
+      target.img = feathers;
+    }
+    if (by >= ground.sy) {
+      clearInterval(tid);
+    }
+    drawAll();
+  }
+
+  </script>
+</body>
+</html>
+
+

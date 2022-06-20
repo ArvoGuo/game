@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<style>
+  form{
+    width: 330px;
+    margin:20px;
+    background-color: brown;
+    padding: 20px;
+
+  }
+</style>
+<body onLoad="init();">
+  <canvas id="canvas" width="400" height="300"></canvas>
+  <br>
+  <form name="f" id="f" onSubmit="return change();">
+    Horizontal velocity <input type="number" name="hv" id="hv" value="4" min="-10" max="10">
+    <br>
+    Vertical velocity <input type="number" name="vv" id="vv" value="8" min="-10" max="10">
+    <br>
+    <input type="submit" value="change">
+  </form>
+  <script>
+    var boxX        = 20;
+    var boxY        = 30;
+    var boxWidth    = 350;
+    var boxHeight   = 250;
+    var ballRad     = 10;
+    var boxBoundX   = boxWidth + boxX - ballRad;
+    var boxBoundY   = boxHeight+ boxY - ballRad;
+    var inBoxBoundX = boxX + ballRad;
+    var inBoxBoundY = boxY + ballRad;
+    var ballX       = 50;
+    var ballY       = 60;
+    var ctx;
+    var ballVx      = 4;
+    var ballVy      = 8;
+
+    function init() {
+      ctx           = document.getElementById('canvas').getContext('2d')
+      ctx.lineWidth = ballRad;
+      ctx.fillStyle = 'rgb(200, 0, 50)';
+      moveBall();
+      setInterval(moveBall, 30);
+    }
+
+    function moveBall() {
+      ctx.clearRect(boxX, boxY, boxWidth, boxHeight);
+      moveAndCheck();
+      ctx.beginPath();
+      ctx.arc(ballX, ballY, ballRad, 0, Math.PI*2, true);
+      ctx.fill();
+      ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+    }
+
+    function moveAndCheck() {
+      var nBallX = ballX + ballVx;
+      var nBallY = ballY + ballVy;
+      if (nBallX > boxBoundX) {
+        ballVx = - ballVx * 0.9;
+        nBallX = boxBoundX;
+      }
+      if (nBallX < inBoxBoundX) {
+        ballVx = - ballVx * 0.9;
+        nBallX = inBoxBoundX;
+      }
+      if (nBallY > boxBoundY) {
+        ballVy = - ballVy * 0.9;
+        nBallY = boxBoundY;
+      }
+      if (nBallY < inBoxBoundY) {
+        ballVy = - ballVy * 0.9;
+        nBallY = inBoxBoundY;
+      }
+      ballX = nBallX;
+      ballY = nBallY;
+    }
+
+    function change() {
+      ballVx = Number(f.hv.value);
+      ballVy = Number(f.vv.value);
+      return false;
+    }
+
+  </script>
+</body>
+
+</html>

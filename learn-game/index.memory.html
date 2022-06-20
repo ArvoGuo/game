@@ -1,0 +1,162 @@
+
+//////写不下去！！！！！！
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Memory</title>
+</head>
+<style>
+  form {
+    width: 330px;
+    margin: 20px;
+    background-color: pink;
+    padding: 20px;
+  }
+  input {
+    text-align: right;
+  }
+</style>
+<body onLoad="init();">
+  <canvas id="canvas" width="900" height="400"></canvas>
+  <br>
+  <form name="f">
+    Number of matches: <input type="text" name="count" value="0" size="1">
+    <br>
+    Time taken to complete puzzle: <input type="text" name="elapsed" value="" size="4">
+  </form>
+</body>
+<script>
+  var ctx;
+  var firstPick     = true;
+  var firstCard;
+  var secondCard;
+  var frontBgColor  = "rgb(251,215,73)";
+  var polyColor     = "rgb(254,11, 0)";
+  var backColor     = "rgb(128,0,128)";
+  var tableColor    = "rbg(255,255,255)";
+  var cardRad       = 30;
+  var deck          = [];
+  var firstSx       = 30;
+  var firstSy       = 50;
+  var margin        = 30;
+  var cardWidth     = 4 * cardRad;
+  var cardHeight    = 4 * cardRad;
+  var matched;
+  var starttime;
+
+  function Card(sx, sy, swidth, sheight, info) {
+    this.sx       = sx;
+    this.sy       = sy;
+    this.swidth   = swidth;
+    this.sheight  = sheight;
+    this.info     = info;
+    this.draw     = drawback;
+  }
+
+  function makedeck() {
+    var i;
+    var acard;
+    var bcard;
+    var cx  = firstSx;
+    var cy  = firstSy;
+    for( i = 3; i < 9; i ++) {
+      acard = new Card(cx, cy, cardWidth, cardHeight, i) ;
+      deck.push(acard);
+      bcard = new Card(cx, cy + cardHeight + margin, cardWidth, cardHeight, i);
+      deck.push(bcard);
+      cx    = cx + cardWidth + margin;
+      acard.draw();
+      bcard.draw();
+    }
+    Shuffle();
+  }
+
+  function Shuffle() {
+    var i ;
+    var k ;
+    var holder;
+    var dl = deck.length;
+    var nt;
+    for( nt = 0; nt < 3 * dl; nt ++) {
+      i = Math.floor(Math.random() * dl);
+      k = Math.floor(Math.random() * dl);
+      holder  = deck[i].info;
+      deck[i].info = deck[k].info;
+      deck[k].info = holder;
+    }
+  }
+
+  function Polycard(sx, sy, rad, n) {
+    this.sx   = sx;
+    this.sy   = sy;
+    this.rad  = rad;
+    this.draw = drawpoly;
+    this.n    = n;
+    this.angle= (2 * Math.PI)/n;
+  }
+
+  function drawpoly() {
+    ctx.fillStyle = frontBgColor;
+    ctx.fillRect(this.sx - 2 * this.rad, this.sy - 2 * this.rad, 4 * this.rad, 4 * this.rad);
+    ctx.beginPath();
+    ctx.fillStyle = polyColor;
+    var i ;
+    var rad       = this.rad;
+    ctx.moveTo(this.sx + rad * Math.cos( - 0.5 * this.angle), this.sy + rad * Math.sin((i - 0.5) * this.angle));
+    ctx.fill();
+  }
+
+  function drawback() {
+    ctx.fillStyle = backColor;
+    ctx.fillRect(this.sx, this.sy, this.swidth, this.height);
+  }
+
+  function choose (ev) {
+    var mx;
+    var my;
+    var pick1;
+    var pick2;
+    if (ev.layerX || ev.layerX == 0) {
+      mx = ev.layerX;
+      my = ev.layerY;
+    } else if (ev.offsetX || ev.offsetX == 0) {
+      mx = ev.offsetX;
+      my = ev.offsetY;
+    }
+    var i ;
+    for (i = 0; i < deck.length; i++ ) {
+      var card = deck[i];
+      if (card.sx >= 0) {
+        if ((mx > card.sx) && (mx < card.sx + card.swidth) && (my > card.sy) && (my < card.sy + card.sheight)) {
+          if
+        }
+      }
+    }
+  }
+    function flipback() {
+      if (!matched) {
+        deck[firstCard].draw();
+        deck[secondCard].draw();
+      } else {
+        ctx.fillStyle = tableColor;
+        ctx.fillRect(deck[secondCard].sx, deck[secondCard].sy, deck[secondCard].swidth, deck[secondCard].sheight);
+        ctx.fillRect(deck[firstCard].sx, deck[firstCard].sy, deck[firstCard].swidth, deck[firstCard].sheight);
+        deck[secondCard].sx = -1;
+        deck[firstCard].sx  = -1;
+      }
+    }
+    function init() {
+      ctx     = document.getElementById('canvas').getContext('2d');
+      canvas1 = document.getElementById('canvas');
+      canvas1.addEventListener('click', choose, false);
+      makedeck();
+      document.f.count.value   = '0';
+      document.f.elapsed.value = '';
+      starttime = new Date();
+      starttime = Number(starttime.getTime());
+      Shuffle();
+    }
+
+</script>
+</html>

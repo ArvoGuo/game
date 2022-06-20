@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+  <canvas id='d' style="background:rgba(0,0,0,0.1)"></canvas>
+</body>
+<script>
+  var result = {
+    preFont: '¥',
+    center: {
+      name:'营业额',
+      value: '123123',
+      other: '(1000单)'
+    },
+    data: [
+      {name: '在线金额支付', value: '1200.00'},
+      {name: '在线金额支付', value: '13.00'},
+      {name: '在线金额支付', value: '12.00'},
+      {name: '在线金额支付', value: '11.00'},
+    ]
+  };
+
+  result.data.sort(function(a,b) {
+    return a.value - b.value;
+  });
+  console.log(result.data)
+
+  var scope = {};
+  scope.option = {};
+  scope.option.preFont = result.preFont;
+  scope.option.center = result.center;
+  scope.option.data = result.data;
+  var preFont = scope.option.preFont;
+      element = document.getElementById('d');
+
+
+
+
+
+
+      var ctx = element.getContext('2d');
+      var W = 500;
+      var H = 500;
+      var LW = 100;
+      var LH = 40;
+      var LINEWIDTH = 28;
+      var LABELANGLE = 25; //标签角度
+      var LABELWIDTH = 1;  //标签线宽
+      var STARTANGLE = 270;
+
+      var center = {
+        x: W/2,
+        y: H/2
+      };
+      var radius = W / 2 * 0.35;
+      var radiusLabel = radius + 50;
+      var radiusTurnLabel = radius + 30;
+      var rad =  Math.PI / 180;
+      element.width = W;
+      element.height= H;
+      var Color = {
+        green:  '#62c880',
+        blue :  '#437fed',
+        orange: '#fc863f',
+        red: '#e34e36',
+        gray: '#bfbfbf'
+      };
+      var ColorArray = [
+        '#fc863f',
+        '#437fed',
+        '#62c880',
+        '#e34e36',
+        '#fc863f',
+        '#437fed',
+        '#62c880',
+        '#e34e36',
+        '#fc863f',
+        '#437fed',
+        '#62c880',
+        '#e34e36',
+        '#fc863f',
+        '#437fed',
+        '#62c880',
+        '#e34e36',
+        '#fc863f',
+        '#437fed',
+        '#62c880',
+        '#e34e36'
+      ];
+      var preFont, series, seriesCenter, total;
+      repaint();
+
+
+      function repaint() {
+        ctx.clearRect(0,0, W,H);
+        preFont = scope.option.preFont;
+        series = scope.option.data;
+        seriesCenter = scope.option.center;
+        total = (function(series) {
+          var t = 0;
+          series.forEach(function(i) {
+            t += parseInt(i.value);
+          });
+          return t ;
+        })(series);
+
+        var pielist = preBuild(ctx,series);
+
+        if (total == 0) {
+          paintNone();
+          drawCenter(ctx, seriesCenter, true);
+        } else {
+          paint(pielist);
+          drawCenter(ctx, seriesCenter);
+        }
+      }
+
+      function preBuild(ctx, _series) {
+        var _pie = [];
+        _series.forEach(function(item, index) {
+          if (item.value == 0) {
+            return;
+          }
+          var lastPieEnd = _pie[_pie.length - 1]? _pie[_pie.length - 1].pie.end : 0;
+          var lastEnd    = lastPieEnd ? lastPieEnd : 270;
+          var angle      = parseInt(item.value) / total * 360;
+          var endAngle   = lastEnd + angle;
+          var labelAngle = angle / 2;
+
+          var _r         = (labelAngle + lastEnd) * rad ;
+          var labelStartPoint = {
+            x: center.x + (radiusTurnLabel + LINEWIDTH/2) * Math.cos(_r),
+            y: center.y + (radiusTurnLabel + LINEWIDTH/2) * Math.sin(_r)
+          };
+          var labelLineStartPoint = {
+            x: center.x + (radiusLabel ) * Math.cos(_r),
+            y: center.y + (radiusLabel ) * Math.sin(_r)
+
+          };
+          var labelFisrtPoint = {
+            x: center.x + (radius + LINEWIDTH/2) * Math.cos(_r),
+            y: center.y + (radius + LINEWIDTH/2) * Math.sin(_r)
+          };
+          var labelWidth = ctx.measureText(item.name).width  + 25;
+          var labelHeight = LH;
+          var _pItem = {
+            pie: {
+              start: lastEnd,
+              end: endAngle,
+              angle: angle,
+            },
+            label: {
+              labelAngle: labelAngle,
+              labelName: item.name,
+              labelValue: item.value,
+              labelFisrtPoint: labelFisrtPoint,
+              labelStartPoint: labelStartPoint,
+              labelLineStartPoint: labelLineStartPoint,
+            },
+            data: item,
+            index: index,
+            setLineEndPoint: function() {
+              this.label.labelLineEndPoint = getPoint(this.label.labelLineStartPoint,labelWidth , 0);
+              return this;
+            },
+            setLabelPoint: function() {
+              this.label.labelValuePoint = getLabelWordPoint(this.label.labelLineStartPoint, this.label.labelLineEndPoint, 20);
+              this.label.labelNamePoint = getLabelWordPoint(this.label.labelLineStartPoint, this.label.labelLineEndPoint, 4);
+              return this;
+            },
+            setLabelRectPoints: function() {
+              this.label.labelRectPoints = [
+                getPoint(this.label.labelLineStartPoint, 0 ,  labelHeight),
+                getPoint(this.label.labelLineEndPoint, 0 ,  labelHeight ),
+                this.label.labelLineEndPoint,
+                this.label.labelLineStartPoint
+              ];
+              return this;
+            },
+            setLabelRect: function() {
+              this.label.labelRect = {
+                points: this.label.labelRectPoints,
+                width : labelWidth,
+                height: labelHeight
+              };
+              return this;
+            },
+            update: function() {
+              this.setLineEndPoint()
+                  .setLabelPoint()
+                  .setLabelRectPoints()
+                  .setLabelRect();
+              return this;
+            }
+          };
+          _pItem.update();
+          _pie.push(_pItem);
+        });
+
+        return adjust(_pie);
+      }
+      function isInsert(rectA, rectB) {
+        if (Math.abs(rectA.points[0].x - rectB.points[0].x) <= rectA.width &&
+            Math.abs(rectA.points[0].y - rectB.points[0].y) <= rectA.height){
+          return true;
+        }
+        return false;
+      }
+      function adjust(_pie) {
+        for (var i = 1; i < _pie.length; i ++ ) {
+          var pieA = _pie[i - 1];
+          var pieB = _pie[i];
+          if (isInsert(pieA.label.labelRect,pieB.label.labelRect)) {
+            pieB.label.labelLineStartPoint = getPointForLabel(pieA.label.labelLineStartPoint,
+                        getLabelXUnit(center, radiusLabel,
+                        pieA.label.labelLineStartPoint.y),
+                        LH);
+            pieB.update();
+          }
+        }
+        return _pie;
+      }
+
+      function drawCircle(ctx, color, pie) {
+        ctx.beginPath();
+        ctx.lineWidth = LINEWIDTH;
+        ctx.strokeStyle = color;
+        ctx.arc(center.x, center.y, radius, pie.start * rad , pie.end * rad, false);
+        ctx.stroke();
+        return ctx;
+      }
+
+      function drawLabel(ctx, color, label) {
+        ctx.beginPath();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
+        ctx.moveTo(label.labelFisrtPoint.x, label.labelFisrtPoint.y);
+        ctx.lineTo(label.labelStartPoint.x, label.labelStartPoint.y);
+        ctx.moveTo(label.labelStartPoint.x, label.labelStartPoint.y);
+        ctx.lineTo(label.labelLineStartPoint.x, label.labelLineStartPoint.y);
+        ctx.moveTo(label.labelLineStartPoint.x, label.labelLineStartPoint.y);
+        ctx.lineTo(label.labelLineEndPoint.x, label.labelLineEndPoint.y);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.font = 'normal normal 600 17px arial';
+        ctx.fillText(preFont + label.labelValue ,label.labelValuePoint.x, label.labelValuePoint.y);
+        ctx.font = 'normal normal 100 15px 微软雅黑';
+        ctx.fillText(label.labelName ,label.labelNamePoint.x, label.labelNamePoint.y);
+      }
+      function drawCenter(ctx, data, invalid) {
+        var y1 = 25;
+        var y2 = 10;
+        var y3 = 30;
+        ctx.textAlign="center";
+        ctx.fillStyle = '#000';
+        ctx.font = 'normal normal 100 18px 微软雅黑';
+        ctx.fillText(data.name,center.x, center.y - y1);
+        ctx.fillStyle = invalid ? Color.gray : Color.red;
+        ctx.font = 'normal normal bold 26px arial';
+        ctx.fillText(preFont + data.value,center.x, center.y + y2);
+        ctx.fillStyle = '#000';
+        ctx.font = 'normal normal 100 14px arial';
+        ctx.fillText(data.other,center.x, center.y + y3);
+      }
+
+      function paint(pielist) {
+        for (var i = 0, len = pielist.length; i < len; i ++) {
+          drawCircle(ctx, ColorArray[i], pielist[i].pie);
+        }
+
+        for (var i = 0, len = pielist.length; i < len; i ++) {
+          drawLabel(ctx, ColorArray[i], pielist[i].label);
+        }
+      }
+
+      function paintNone() {
+        ctx.beginPath();
+        ctx.lineWidth = LINEWIDTH;
+        ctx.strokeStyle = Color.gray;
+        ctx.arc(center.x, center.y, radius, 0 * rad , 360 * rad, false);
+        ctx.stroke();
+      }
+
+      function getPoint(point, _x , _y, notAgainst) {
+        var defaultX = _x;
+        var defaultY = _y;
+        if (point.x > center.x && point.y > center.y) {
+          //1
+          _x = _x;
+          _y = _y;
+        }
+        if (point.x > center.x && point.y < center.y) {
+          //2
+          _x = _x;
+          _y = -_y;
+        }
+        if (point.x < center.x && point.y > center.y) {
+          //3
+          _x = -_x;
+          _y = _y;
+        }
+        if (point.x < center.x && point.y < center.y) {
+          //4
+          _x = -_x;
+          _y = -_y;
+        }
+        if (notAgainst) {
+          _x = defaultX;
+          _y = defaultY;
+        }
+        return {
+          x: point.x + _x,
+          y: point.y + _y
+        };
+      }
+
+      function getPointForLabel(point, _x , _y, notAgainst) {
+        var defaultX = _x;
+        var defaultY = _y;
+        if (point.x > center.x && point.y > center.y) {
+          //1
+          _x = -_x;
+          _y = _y;
+        }
+        if (point.x > center.x && point.y < center.y) {
+          //2
+          _x = _x;
+          _y = _y;
+        }
+        if (point.x < center.x && point.y > center.y) {
+          //3
+          _x = -_x;
+          _y = _y;
+        }
+        if (point.x < center.x && point.y < center.y) {
+          //4
+          _x = -_x;
+          _y = -_y;
+        }
+        if (notAgainst) {
+          _x = defaultX;
+          _y = defaultY;
+        }
+        return {
+          x: point.x + _x,
+          y: point.y + _y
+        };
+      }
+
+      function quadrant(point) {
+        if (point.x > center.x && point.y < center.y) {
+          //1
+          return 1;
+        }
+        if (point.x > center.x && point.y > center.y) {
+          //2
+          return 2;
+        }
+        if (point.x < center.x && point.y > center.y) {
+          //3
+          return 3;
+        }
+        if (point.x < center.x && point.y < center.y) {
+          //4
+          return 4;
+        }
+        return false;
+      }
+
+      function getLabelXUnit(center, r, y) {
+        var x  = getIntersectPoint(center, r, y);
+        var x2 = getIntersectPoint(center, r, y + LH);
+        function getIntersectPoint(center, r, y) {
+          return Math.sqrt(Math.abs(r*r - (y - center.y) * (y - center.y))) + center.x;
+        }
+        return Math.abs(x - x2);
+      }
+
+      function getLabelWordPoint(start, end, y) {
+        var _p = start;
+        var q = quadrant(_p);
+        if (q == 1 || q == 2) {
+          _p = {
+            x: start.x + 4,
+            y: start.y
+          };
+        } else {
+          _p = {
+            x: end.x ,
+            y: end.y
+          };
+        }
+        return {
+          x: _p.x ,
+          y: _p.y - y
+        };
+      }
+</script>
+</html>

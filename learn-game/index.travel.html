@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>travel</title>
+</head>
+<body onLoad="init();">
+<canvas id="canvas" width="900" height="350"></canvas>
+<br>
+choose level and click get maze buttong to get a maze;
+<form name="gf" onSubmit="return getWalls()">
+  <br>
+  <input type="radio" value="hard" name="level">Hard
+  <br>
+  <input type="radio" value="moderate" name="level"> Moderate
+  <br>
+  <input type="radio" value="easy" name="level">Easy
+  <br>
+  <input type="submit" value="GET maze">
+  <br>
+</form>
+<p>
+  use arrow keys to move token
+</p>
+</body>
+<script>
+  var cWidth        = 900;
+  var cHeight       = 350;
+  var ctx;
+  var everything    = [];
+  var curWall;
+  var wallWidth     = 5;
+  var wallStyle     = "rgb(200, 0, 200)";
+  var walls         = [];
+  var inmotion      = false;
+  var unit          = 10;
+  function Token(sx, sy, rad, styleString, n) {
+    this.sx         = sx;
+    this.sy         = sy;
+    this.rad        = rad;
+    this.draw       = drawToken;
+    this.n          = n;
+    this.angle      = (2 * Math.PI) / n;
+    this.moveIt     = moveToken;
+    this.fillStyle  = styleString;
+  }
+
+  function drawToken() {
+    ctx.fillStyle   = this.fillStyle;
+    ctx.beginPath();
+    var i ;
+    var rad = this.rad;
+    ctx.beginPath();
+    ctx.moveTo(this.sx + rad * Math.cos( - 0.5 * this.angle), this.sy + rad * Math.sin((i - 0.5) * this.angle));
+    for(i = 0; i < this.n; i ++) {
+      ctx.lineTo(this.sx + rad * Math.cos((i - 0.5) * this.angle), this.sy + rad * Math.sin((i - 0.5) * this.angle));
+    }
+    ctx.fill();
+  }
+
+  function moveToken(dx, dy) {
+    this.sx += dx;
+    this.sy += dy;
+    var i;
+    var wall;
+    for(i = 0; i< walls.length; i++) {
+      wall = walls[i];
+      if(intersect(wall.sx, wall.sy, wall.fx, wall.fy, this.sx, this.sy, this.rad)){
+        this.sx -= dx;
+        this.sy -= dy;
+        break;
+      }
+    }
+  }
+
+  function Wall(sx, sy, fx, fy, width, styleString) {
+    this.sx         = sx;
+    this.sy         = sy;
+    this.fx         = fx;
+    this.fy         = fy;
+    this.width      = width;
+    this.draw       = drawAline;
+    this.strokeStyle = styleString;
+  }
+
+  function drawAline() {
+    ctx.lineWidth     = this.width;
+    ctx.strokeStyle   = this.strokeStyle;
+    ctx.beginPath();
+    ctx.moveTo(this.sx, this.sy);
+    ctx.lineTo(this.fx, this.fy);
+    ctx.stroke();
+  }
+
+  var mypent = new Token(100, 100, 20, "rgb(0,0,250)", 5);
+
+  everything.push(mypent);
+
+  function init() {
+    ctx = document.getElementById('canvas').getContext('2d');
+    canvas1 = document.getElementById('canvas');
+    canvas1.addEventListener('mousedown', startWall, false);
+    canvas1.addEventListener('mousemove', stretchWall, false);
+    canvas1.addEventListener('mouseup', finish, false);
+    window.addEventListener('keydown', getKeyAndMove, false);
+    drawAll();
+  }
+
+  function startWall(ev) {
+    var mx;
+    var my;
+    if (ev.layerX || ev.layerX == 0) {
+      mx = ev.layerX;
+      my = ev.layerY;
+    } else if (ev.offsetX || ev.offsetY == 0) {
+      mx = ev.offsetX;
+      my = ev.offsetY;
+    }
+    curWall   = new Wall(mx, my, mx + 1, my + 1, wallWidth, wallStyle);
+    inmotion  = true;
+    everything.push(curWall);
+    drawAll();
+  }
+
+  function stretchWall (ev) {
+    if (inmotion) {
+      var mx;
+      var my;
+      if (ev.layerX || ev.layerX == 0) {
+        mx = ev.layerX;
+        my = ev.layerY;
+      } else if (ev.offsetX || ev.offsetX == 0) {
+        mx = ev.offsetX;
+        my = ev.offsetY;
+      }
+      curWall.fx = mx;
+      curWall.fy = my;
+      drawAll();
+    }
+  }
+
+  function finish(ev) {
+    inmotion = false;
+    walls.push(curWall);
+  }
+
+
+
+  function drawAll() {
+    ctx.clearRect(0, 0, cWidth, cHeight);
+    var i ;
+    for(i = 0; i < everything.length; i ++) {
+      everything[i].draw();
+    }
+  }
+
+  function getKeyAndMove(event) {
+    var keycode;
+    if( event == null) {
+      keyCode = window.event.keyCode;
+      window.event.preventDefault();
+    } else {
+      keyCode  = event.keyCode;
+      event.preventDefault();
+    }
+    switch(keyCode) {
+      case 37:
+        mypent.moveIt(-unit, 0);
+        break;
+      case 38:
+        mypent.moveIt(0, -unit);
+        break;
+      case 39:
+        mypent.moveIt(unit, 0);
+        break;
+      case 40:
+        mypent.moveIt(0, unit);
+        break;
+      default:
+        window.removeEventListener('keydown', getKeyAndMove, false);
+    }
+    drawAll();
+  }
+
+  function intersect(sx, sy, fx, fy, cx, cy, rad) {
+    var dx;
+    var dy;
+    var t;
+    var rt;
+    dx = fx - sx;
+    dy = fx - sy;
+    t = 0.0 -((sx - cx) * dx + (sy - cy) * dy) / ((dx * dx) + (dy * dy));
+    if (t < 0.0) {
+      t = 0.0;
+    } else if (t > 1.0) {
+      t = 1.0;
+    }
+    dx = (sx + t * (fx - sx)) - cx;
+    dy = (sy + t * (fy - sy)) - cy;
+    rt = (dx * dx) + (dy * dy);
+    if (rt < (rad * rad)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  function getWalls() {
+    var sWalls;
+    var i;
+    var sx;
+    var sy;
+    var fx;
+    var fy;
+    var curWall;
+    var lsName;
+    var wallStags;
+    for ( i = 0; i < document.gf.level.length; i ++ ) {
+      if (document.gf.level[i].checked) {
+        lsname = document.gf.level[i].value + 'maze';
+        break;
+      }
+    }
+    sWalls = localStorage.getItem(lsName);
+    if (sWalls != null) {
+      wallStgs    = sWalls.split(',');
+      walls       = [];
+      everything  = [];
+      everything.push(mypent);
+      for( i = 0; i < wallStgs.length; i ++) {
+        sw        = wallStgs[i].spilt('+');
+        sx        = Number(sw[0]);
+        sy        = Number(sw[1]);
+        fx        = Number(sw[2]);
+        fy        = Number(sw[3]);
+        curWall   = new Wall(sx, sy, fx, fy, wallWidth, wallStyle);
+        walls.push(curWall);
+        everything.push(curwall);
+      }
+      drawAll();
+    } else {
+      alert('No data retrieved.');
+    }
+    window.addEventListener('keydown', getKeyAndMove, false);
+    return false;
+  }
+
+</script>
+
+</html>
