@@ -6,7 +6,7 @@
 
 这有好多球
 
-http://arvoguo.github.io/learn-game/index.fall.html
+http://arvoguo.github.io/game/learn-game/index.fall.html
 
 2014
 ----
